@@ -11,15 +11,15 @@
 	Utils
 		string
 		number
-		inheritance
-			ctor
-			extend
+		*inheritance
+			*ctor
+			*extend
 
 	events
 		pub,sub,unsub
 	
 	inputhandler
-		extends events
+		inherits from events
 	
 	keyhandler
 		inherits from new inputhandler
@@ -63,7 +63,8 @@
 
 (function() {
 	
-	var GameFramework = {};
+	var GameFramework = {},
+		Ctor = function(){};
 	
 	/**
 	*	Utility functions, split into categories
@@ -82,6 +83,38 @@
 			capitalize: function(string) {
 				return string.charAt(0).toUpperCase + string.slice(1);
 			}
+		},
+		
+		/**
+		*	Inheritance. Highly influenced by Backbone's inheritance system.
+		*/
+		inherit: function(parent, protoProps, staticProps) {
+			var child = function() {
+				return parent.apply(this, arguments);
+			};
+			
+			// extend child with parent here
+			// _.extend(child, parent);
+			
+			Ctor.prototype = parent.prototype;
+			child.prototype = new Ctor();
+			
+			// Add protoProps/staticProps here
+			
+			child.prototype.constructor = child;
+			
+			child.__super__ = parent.prototype;
+			
+			return child;
+		},
+		
+		/**
+		*	Extend. Again, influenced by Backbone's extend() method.
+		*/
+		extend: function(protoProps, staticProps) {
+			var child = GameFramework.utils.inherit(this, protoProps, staticProps);
+			child.extend = this.extend;
+			return child;
 		}
 	};
 	
@@ -183,6 +216,7 @@
 		}
 	};
 	
+
 	
 	GameFramework.Renderer = function(options) {
 		
