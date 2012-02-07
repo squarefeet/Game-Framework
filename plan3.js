@@ -218,15 +218,73 @@
 	
 
 	
-	GameFramework.Renderer = function(options) {
+	/**
+	*	Keyhandler
+	*	@constructor
+	*/
+	GameFramework.KeyHandler = function() {
+		
+	};
+	
+	
+	/**
+	*	MouseHandler
+	*	@constructor
+	*/
+	GameFramework.MouseHandler = function() {
+		
+	};
+	
+	
+	/**
+	*	Game object store.
+	*	FIXME: 
+	*		sort _store by z-value (needs testing)
+	*
+	*/
+	GameFramework.ObjectStore = function() {
+		var _store = [];
+		
+		this.get = function(key) {
+			for(var i = 0, l = _store.length; i < l; ++i) {
+				if(_store[i].key === key) {
+					return _store[i];
+				}
+			}
+			return null;
+		};
+		
+		this.getAll = function() {
+			return _store;
+		};
+		
+		this.set = function(key, value) {
+			_store.push({
+				key: key,
+				value: value
+			});
+			
+			this.sort();
+		};
+		
+		this.sort = function() {
+			_store.sort(function(a, b) {
+				if(a.z && b.z) {
+					return a.z - b.z;
+				}
+				else {
+					return a - b;
+				}
+			});
+		};
+	};
+	
+	
+	GameFramework.Renderer = function(camera, state) {
 		
 		// Cache options
 		this.options = {};
 		
-		// Create the canvas element or use one provided by the `options` argument.
-		this.element = options.element || document.createElement('canvas');
-		this.element.width = options.width || 320;
-		this.element.height = options.height || 480;
 		
 		// Canvas clear property
 		this.clear = typeof options.clear === 'boolean' ? options.clear : true;
@@ -302,9 +360,40 @@
 	};
 	
 	
+	/**
+	*	The game state serves as a 'snapshot' of a particular section of the 
+	*	game, such as an intro state, a menu state, and a game state.
+	*	Each state has its own keyhandler, mousehandler, and game object store.
+	*/
 	GameFramework.State = function() {
 		
+		this.keyHandler = new GameFramework.KeyHandler();
+		this.mouseHandler = new GameFramework.MouseHandler();
+		
+		this.store = new GameFramework.ObjectStore();
 	};
+	
+	
+	/**
+	*	Initialize the framework. Takes a map of options detailing the canvas
+	*	width, height, etc.
+	*/
+	GameFramework.initialize = function(options) {
+		
+		var obj = {};
+		
+		obj.canvas = document.createElement('canvas');
+		obj.canvas.width = options.width || '320';
+		obj.canvas.height = options.height || '240';
+		
+		obj.context = obj.canvas.getContext('2d');
+		
+		
+		for(var i in obj) {
+			GameFramework[i] = obj[i];
+		}
+	};
+	
 	
 	
 	// Expose GameFramework to the window
